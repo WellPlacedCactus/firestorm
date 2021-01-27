@@ -4,15 +4,17 @@
 let canvas;
 let context;
 let mouse;
+let keys;
 let particles;
 
 function init() {
-	canvas = document.querySelector('#viewport');
+	canvas = document.createElement('canvas');
 	context = canvas.getContext('2d');
 	mouse = {};
-
+	keys = [];
 	particles = [];
 
+	document.body.append(canvas);
 	resize();
 	loop();
 }
@@ -24,7 +26,15 @@ function loop() {
 
 	if (mouse.down) {
 		for (let i = 0; i < 10; i++) {
-			particles.push(new FireParticle())
+			particles.push(new Particle(
+				mouse.x,
+				mouse.y,
+				randi(5, 25),
+				new Color(255, randi(0, 255), 0),
+				randf(-3, 3),
+				-randf(10, 15),
+				randf(0.01, 0.05)
+			));
 		}
 	}
 
@@ -39,16 +49,10 @@ function loop() {
 	for (let i = particles.length - 1; i >= 0; i--) {
 		let particle = particles[i];
 
-		particle.update();
-		particle.render(context);
+		particle.tick(canvas);
+		particle.draw(context);
 
-		if (particle.x + particle.r < 0 ||
-			particle.y + particle.r < 0 ||
-			particle.x - particle.r > canvas.width ||
-			particle.y - particle.r > canvas.height ||
-			particle.dead) {
-			particles.splice(i, 1);
-		}
+		if (particle.dead) particles.splice(i, 1);
 	}
 
 	//** HUD
@@ -74,6 +78,14 @@ function mousedown() {
 
 function mouseup() {
 	mouse.down = false;
+}
+
+function keydown(e) {
+	keys[e.keyCode] = true;
+}
+
+function keyup(e) {
+	keys[e.keyCode] = false;
 }
 
 window.onload = init;
